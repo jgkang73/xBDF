@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:util="http://www.springframework.org/schema/util"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:mvc="http://www.springframework.org/schema/mvc"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd
+                http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.0.xsd
+                http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-4.0.xsd">
+	
+	<!-- 2025.05.01 :: 참고사이트 - https://docs.tobesoft.com/edu-nexacro-egov -->
+	<!-- 2025.05.01 :: 위 참고사이트 소스는 오류가 존재하며 / 참고사이트에서 압축된 전체소스를 다운로드 후 수정하면 오류가 해소됨 -->
+	
+    <context:component-scan base-package="egovframework">
+        <context:include-filter type="annotation" expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation" expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter">
+        <property name="webBindingInitializer">
+            <bean class="egovframework.example.cmmn.web.EgovBindingInitializer"/>
+        </property>
+    </bean>
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="interceptors">
+            <list>
+                <ref bean="localeChangeInterceptor" />
+            </list>
+        </property>
+    </bean>
+    
+    <bean id="localeResolver" class="org.springframework.web.servlet.i18n.SessionLocaleResolver" />
+    <!-- 쿠키를 이용한 Locale 이용시 <bean id="localeResolver" class="org.springframework.web.servlet.i18n.CookieLocaleResolver"/> -->
+    <bean id="localeChangeInterceptor" class="org.springframework.web.servlet.i18n.LocaleChangeInterceptor">
+        <property name="paramName" value="language" />
+    </bean>
+
+    <bean class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+        <property name="defaultErrorView" value="cmmn/egovError"/>
+        <property name="exceptionMappings">
+            <props>
+                <prop key="org.springframework.dao.DataAccessException">cmmn/dataAccessFailure</prop>
+                <prop key="org.springframework.transaction.TransactionException">cmmn/transactionFailure</prop>
+                <prop key="org.egovframe.rte.fdl.cmmn.exception.EgovBizException">cmmn/egovError</prop>
+                <prop key="org.springframework.security.AccessDeniedException">cmmn/egovError</prop>
+            </props>
+        </property>
+    </bean>
+
+    <bean class="org.springframework.web.servlet.view.UrlBasedViewResolver" p:order="1"
+	    p:viewClass="org.springframework.web.servlet.view.JstlView"
+	    p:prefix="/WEB-INF/jsp/egovframework/example/" p:suffix=".jsp"/>
+
+    <!-- For Pagination Tag -->
+    <bean id="imageRenderer" class="egovframework.example.cmmn.web.EgovImgPaginationRenderer"/>
+
+    <bean id="paginationManager" class="org.egovframe.rte.ptl.mvc.tags.ui.pagination.DefaultPaginationManager">
+        <property name="rendererType">
+            <map>
+                <entry key="image" value-ref="imageRenderer"/>
+            </map>
+        </property>
+    </bean>
+	<!-- /For Pagination Tag -->
+	
+	
+	
+    <!-- /////////////////////////////////// 넥사크로N UIADAPTER 설정 시작 /////////////////////////////////// -->
+    <!-- 2025.05.01 :: nexacroInterceptor : 넥사크로 클라이언트로부터 전송된 HTTP 요청 데이터를 서버에서 처리하기 쉬운 형태인 PlatformData 객체로 변환하는 역할을 수행하는 객체(요청이 컨트롤러에 도달하기 전, 넥사크로 요청 여부를 판단하고 필요한 환경 설정을 수행) -->
+	<!-- 2025.05.01 :: nexacroFileView : 서버에 저장된 파일을 넥사크로 클라이언트로 전송할 때 사용하는 객체 -->
+	<!-- 2025.05.01 :: nexacroView : 서버의 PlatformData 객체나 NexacroResult에 담긴 데이터를 넥사크로 클라이언트가 이해할 수 있는 프로토콜로 변환하는 객체 -->    
+    <bean id="nexacroInterceptor" class="com.nexacro.uiadapter.spring.core.servlet.NexacroInterceptor"/>
+    <bean id="nexacroFileView"    class="com.nexacro.uiadapter.spring.core.view.NexacroFileView" />
+    <bean id="nexacroView"        class="com.nexacro.uiadapter.spring.core.view.NexacroView">
+        <property name="defaultContentType" value="PlatformXml" /><!-- PlatformXml, PlatformJson -->
+        <property name="defaultCharset" value="UTF-8" />
+    </bean>
+    
+    <!-- trimParamDataSet, trimParamVariable = all 설정 사용 -->
+    <!-- @ParamDataSet, @ParamVariable 으로 들어오는 값 trim 적용.  \n \t 도 제거됨 -->
+    <util:properties id="EtcProperty" >
+        <prop key="uiAdapter.trimParamDataSet">all</prop>
+        <prop key="uiAdapter.trimParamVariable">all</prop>
+    </util:properties>
+    
+    <!-- 넥사크로N RequestMappingHandlerAdapter 구현체 등록 -->
+    <!-- 2025.05.01 :: 넥사크로N RequestMappingHandlerAdapter 구현체 등록 -->
+    <!-- 2025.05.01 :: 넥사크로에서 보낸 데이터셋, 변수등을 컨트롤러 메소드에서 사용할 수 있도록 자바 빈 형태로 매핑 -->
+    <!-- 2025.05.01 :: 컨트롤러의 경과를 넥사크로가 읽을 수 있도록 변환하는 기능 -->    
+    <bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroRequestMappingHandlerAdapter" p:order="0">
+        <property name="customArgumentResolvers">
+            <list><bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroMethodArgumentResolver" /></list>
+        </property>
+        <property name="customReturnValueHandlers">
+            <list>
+                <bean class="com.nexacro.uiadapter.spring.core.resolve.NexacroHandlerMethodReturnValueHandler">
+                    <property name="view"     ref="nexacroView" />
+                    <property name="fileView" ref="nexacroFileView" />
+                </bean>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- 넥사크로N EXCEPTION-RESOLVER 등록 -->
+    <bean id="exceptionResolver" class="com.nexacro.uiadapter.spring.core.resolve.NexacroMappingExceptionResolver" p:order="1">
+        <property name="view" ref="nexacroView" />   
+        <property name="shouldLogStackTrace" value="true" />   
+        <property name="shouldSendStackTrace" value="true" />
+        <!-- shouldSendStackTrace 가 false 일 경우 nexacroN으로 전송되는 에러메시지  -->
+        <!-- <property name="defaultErrorMsg" value="An Error Occured. check the ErrorCode for detail of error infomation" /> -->
+        <property name="defaultErrorMsg" value="fail.common.msg" />
+        <property name="messageSource" ref="messageSource" />   
+    </bean>
+
+
+    <!-- XENI REQUEST-MAPPING-HANDLERADAPTER 등록 -->
+    <bean class="org.springframework.web.servlet.mvc.SimpleControllerHandlerAdapter"/>
+    <bean id="xeniUrlMapping" class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping" p:order="0">
+        <property name="mappings">
+            <props>
+                <prop key="/XExportImport.do">xeniWrappingController</prop>
+            </props>
+        </property>
+    </bean>
+    
+    <!-- XENI WRAPPINGCONTROLLER 설정. -->
+    <bean id="xeniWrappingController" class="org.springframework.web.servlet.mvc.ServletWrappingController">
+        <property name="servletClass">
+            <value>com.nexacro.java.xeni.services.GridExportImportServlet</value>
+        </property>
+    </bean>
+    <!-- /////////////////////////////////// 넥사크로N UIADAPTER 설정 끝 /////////////////////////////////// -->
+    
+    <!-- Multipart Resolver 최대 10메가 바이트(정확히 10메가는 아니지만)까지 업로드가 가능하도록 설정 -->
+    <!-- XENI를 이용한 엑셀 IMPORT시 필요(엑셀 이용시 반드시 정의해야 함) -->
+    <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
+        <property name="maxUploadSize"   value="100000000" />
+        <property name="maxInMemorySize" value="100000000" />
+    </bean>
+	
+	
+
+    <mvc:view-controller path="/cmmn/validator.do" view-name="cmmn/validator"/>
+</beans>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd">
+
+	<!-- SqlSession setup for MyBatis Database Layer -->
+	<bean id="sqlSession" class="org.mybatis.spring.SqlSessionFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+
+	<!-- 작성일자: 2025.05.01 :: sql mapper 경로 수정 -->
+		<property name="configLocation" value="classpath:/egovframework/sqlmap/hcm/sql-mapper-config.xml" />
+		<property name="mapperLocations" value="classpath:/egovframework/sqlmap/hcm/mappers/*.xml" />
+	
+	<!-- 작성일자: 2025.05.01 :: 최초 스립트 수정	
+		<property name="configLocation" value="classpath:/egovframework/sqlmap/example/sql-mapper-config.xml" />
+		<property name="mapperLocations" value="classpath:/egovframework/sqlmap/example/mappers/*.xml" />
+	-->
+	
+	</bean>
+
+	<!-- MapperConfigurer setup for MyBatis Database Layer with @Mapper("deptMapper") in DeptMapper Interface -->
+	<!-- 작성일자 : 2026.05.01 :: value - egovframework.example.sample.service.impl
+	     설명 : MyBatis용 데이터베이스 레이어용 MapperConfigurer에 egovframework.example 아래 **.impl 파일 자동인식
+	-->
+	<bean class="org.egovframe.rte.psl.dataaccess.mapper.MapperConfigurer">
+		<property name="basePackage" value="egovframework.example" />
+	</bean>
+	
+	<!-- 작성일자 : 2026.05.01 :: value - egovframework.example.sample.service.impl
+	     설명 : MyBatis용 데이터베이스 레이어용 MapperConfigurer에 추가된 hcm.service.impl 추가(구분자 콤마)	
+ 	<bean class="org.egovframe.rte.psl.dataaccess.mapper.MapperConfigurer">
+		<property name="basePackage" value="egovframework.example.hcm.service.impl
+		                                   ,egovframework.example.sample.service.impl
+		                                   " />
+	</bean>
+    -->
+    
+</beans>

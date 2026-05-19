@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN" "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+    <typeAliases>
+		<typeAlias alias="egovMap" type="org.egovframe.rte.psl.dataaccess.util.EgovMap"/>
+		<typeAlias alias="searchVO" type="egovframework.example.sample.service.SampleDefaultVO"/>
+		<typeAlias alias="sampleVO" type="egovframework.example.sample.service.SampleVO"/>
+    </typeAliases>
+    
+    
+    <!-- 작성일자 : 2026.05.01 :: 쿼리결과가 0건을 경우 컬럼헤더를 강제적으로 생성하는 플러그인 -->
+    <plugins>
+    	<plugin interceptor="com.nexacro.uiadapter.spring.dao.mybatis.NexacroMybatisMetaDataProvider" />
+    	<plugin interceptor="com.nexacro.uiadapter.spring.dao.mybatis.NexacroMybatisResultSetHandler" />
+    </plugins>
+</configuration>

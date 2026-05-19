@@ -1,0 +1,145 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FDL version="2.1">
+  <Form id="Form_Work" width="1280" height="720" titletext="Form_Work">
+    <Layouts>
+      <Layout width="1280" height="720" screenid="Desktop_screen">
+        <Button id="btnSearch" taborder="0" text="조회" left="429" top="20" width="100" height="30" onclick="btnSearch_onclick"/>
+        <Grid id="Grid00" taborder="1" left="18" top="60" width="1242" height="310" binddataset="dsComCodeType" autofittype="col">
+          <Formats>
+            <Format id="default">
+              <Columns>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+                <Column size="80"/>
+              </Columns>
+              <Rows>
+                <Row band="head" size="24"/>
+                <Row size="24"/>
+              </Rows>
+              <Band id="head">
+                <Cell text="CODE_TYPE_ID"/>
+                <Cell col="1" text="CODE_TYPE"/>
+                <Cell col="2" text="CODE_TYPE_NM"/>
+                <Cell col="3" text="CODE_TYPE_NM_S"/>
+                <Cell col="4" text="START_DATE"/>
+                <Cell col="5" text="END_DATE"/>
+                <Cell col="6" text="ENTRY_TYPE_CD"/>
+                <Cell col="7" text="REMARK"/>
+                <Cell col="8" text="CREATE_DATE"/>
+                <Cell col="9" text="CREATE_BY"/>
+                <Cell col="10" text="UPDATE_DATE"/>
+                <Cell col="11" text="UPDATE_BY"/>
+              </Band>
+              <Band id="body">
+                <Cell text="bind:CODE_TYPE_ID"/>
+                <Cell col="1" text="bind:CODE_TYPE"/>
+                <Cell col="2" text="bind:CODE_TYPE_NM"/>
+                <Cell col="3" text="bind:CODE_TYPE_NM_S"/>
+                <Cell col="4" text="bind:START_DATE"/>
+                <Cell col="5" text="bind:END_DATE"/>
+                <Cell col="6" text="bind:ENTRY_TYPE_CD"/>
+                <Cell col="7" text="bind:REMARK"/>
+                <Cell col="8" text="bind:CREATE_DATE"/>
+                <Cell col="9" text="bind:CREATE_BY"/>
+                <Cell col="10" text="bind:UPDATE_DATE"/>
+                <Cell col="11" text="bind:UPDATE_BY"/>
+              </Band>
+            </Format>
+          </Formats>
+        </Grid>
+        <Button id="btnDsData" taborder="2" text="XML보기" left="534" top="20" width="100" height="30" onclick="fn_ResultXML"/>
+        <Edit id="edCodeType" taborder="3" left="144" top="20" width="280" height="30" value="SYSTEM" text="SYSTEM"/>
+        <Static id="Static00" taborder="4" text="코드유형" left="19" top="20" width="120" height="30" textAlign="right"/>
+        <Static id="stRowCount" taborder="5" text="row count : 0" left="1140" top="20" width="120" height="30" textAlign="right"/>
+      </Layout>
+    </Layouts>
+    <Script type="xscript5.1"><![CDATA[
+this.btnSearch_onclick = function(obj:nexacro.Button,e:nexacro.ClickEventInfo)
+{	
+	this.dsSearch.clearData();
+	var nRow = this.dsSearch.addRow();
+	var sCodeType = this.edCodeType.text;
+	var sCodeTypeNm = "시스템";
+	var sUserId = "Admin";
+	
+	this.dsSearch.setColumn(nRow, "CODE_TYPE", sCodeType);
+	this.dsSearch.setColumn(nRow, "CODE_TYPE_NM", sCodeTypeNm);	
+	
+	//trace(this.dsSearch.saveXML());
+	
+	
+	this.transaction("selectComCodeTypeList"                                       			//서비스ID
+	                ,"http://localhost:8080/edu-egov/com/COM10000/selectComCodeTypeList.do"	//호출URL
+					,"inSearch=dsSearch"          											//INPUT데이터셋(서버 송신 Data Set Name=화면 input Data Set Name)
+					,"dsComCodeType=outSelectList dsRowCount=outSelectCount"				//OUTPUT데이터셋(화면 output Data Set Name=서버 수신된 Data Set Name)
+					,"userId=" + sUserId													//매개변수
+					,"fn_callBack"															//콜백함수
+					);
+};
+
+// 콜백함수
+this.fn_callBack = function(strSvcID, strErrCd, strErrMsg)
+{
+	if(strErrCd < 0) {
+		alert("오류 : " + strErrMsg);
+	}
+	
+	switch(strSvcID) {
+		case "selectComCodeTypeList":
+			trace("###########################################################");
+			//trace(this.dsRowCount.saveXML());
+			var rowCount = this.dsRowCount.getColumn(0, "ROW_CNT");
+			this.stRowCount.text = "row count : " + rowCount;
+			if (rowCount == 0) {
+				alert("조회조건에 일치하는 데이터가 존재하지 않습니다.");
+			}
+			break;
+	}	
+};
+
+this.fn_ResultXML = function(obj:nexacro.Button,e:nexacro.ClickEventInfo)
+{	
+	trace(this.dsComCodeType.saveXML());
+	trace(this.dsRowCount.saveXML());
+};
+]]></Script>
+    <Objects>
+      <Dataset id="dsComCodeType">
+        <ColumnInfo>
+          <Column id="CODE_TYPE_ID" type="STRING" size="256"/>
+          <Column id="CODE_TYPE" type="STRING" size="256"/>
+          <Column id="CODE_TYPE_NM" type="STRING" size="256"/>
+          <Column id="CODE_TYPE_NM_S" type="STRING" size="256"/>
+          <Column id="START_DATE" type="STRING" size="256"/>
+          <Column id="END_DATE" type="STRING" size="256"/>
+          <Column id="ENTRY_TYPE_CD" type="STRING" size="256"/>
+          <Column id="REMARK" type="STRING" size="256"/>
+          <Column id="CREATE_DATE" type="STRING" size="256"/>
+          <Column id="CREATE_BY" type="STRING" size="256"/>
+          <Column id="UPDATE_DATE" type="STRING" size="256"/>
+          <Column id="UPDATE_BY" type="STRING" size="256"/>
+        </ColumnInfo>
+      </Dataset>
+      <Dataset id="dsSearch">
+        <ColumnInfo>
+          <Column id="CODE_TYPE" type="STRING" size="256"/>
+          <Column id="CODE_TYPE_NM" type="STRING" size="256"/>
+        </ColumnInfo>
+      </Dataset>
+      <Dataset id="dsRowCount">
+        <ColumnInfo>
+          <Column id="ROW_CNT" type="STRING" size="256"/>
+        </ColumnInfo>
+      </Dataset>
+    </Objects>
+  </Form>
+</FDL>

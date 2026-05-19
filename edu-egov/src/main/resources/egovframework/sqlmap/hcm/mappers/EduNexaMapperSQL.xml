@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="egovframework.example.hcm.service.impl.EduNexaMapper">
+
+	<!-- 코드유형 데이터 조회 -->	
+	<select id="selectComCodeTypeList" resultType="map">
+		select cct.code_type_id
+		      ,cct.code_type
+		      ,cct.code_type_nm
+		      ,cct.code_type_nm_s
+		      ,cct.start_date
+		      ,cct.end_date
+		      ,cct.entry_type_cd
+		      ,cct.remark
+		      ,cct.create_date
+		      ,cct.create_by
+		      ,cct.update_date
+		      ,cct.update_by
+		  from com_code_type cct
+		 where 1=1
+		   and cct.code_type    like #{CODE_TYPE} ||'%'
+		   and cct.code_type_nm like #{CODE_TYPE_NM} ||'%'
+		 order by cct.code_type
+	</select>
+	
+	<!-- 코드유형 데이터 건수 조회 -->
+	<select id="selectComCodeTypeCount" resultType="map">
+		select count(1) as row_cnt
+		  from com_code_type cct
+		 where 1=1
+		   and cct.code_type    like #{CODE_TYPE} ||'%'
+		   and cct.code_type_nm like #{CODE_TYPE_NM} ||'%'
+	</select>
+
+</mapper>
